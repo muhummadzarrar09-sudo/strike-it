@@ -95,7 +95,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       try {
         authenticated = await _localAuth.authenticate(
           localizedReason: 'Verify your identity to enable lock',
-          options: const AuthenticationOptions(biometricOnly: false),
+          options: AuthenticationOptions(biometricOnly: false),
         );
       } on PlatformException catch (e) {
         debugPrint('[Settings] Biometric error: ${e.code} — ${e.message}');

@@ -76,11 +76,7 @@ class AppShell extends ConsumerWidget {
           indicatorShape: const StadiumBorder(),
           labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
           selectedIndex: shell.currentIndex,
-          onDestinationSelected: (index) => shell.goBranch(
-            index,
-            // go_router 17: renamed from initialLocation
-            initialLocationIfNeeded: index == shell.currentIndex,
-          ),
+          onDestinationSelected: (index) => shell.goBranch(index),
           destinations: _navItems,
         ),
       ),

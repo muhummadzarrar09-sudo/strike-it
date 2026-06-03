@@ -12,9 +12,9 @@ import '../data/repositories/habit_repository.dart';
 /// Notification service — scheduling, cancellation, immediate alerts.
 ///
 /// FIX HISTORY (see MISTAKE_LOG.md RUNTIME-001):
-///   - tz.setLocalLocation(tz.UTC) was hardcoded → notifications fired at
-///     wrong time. Now uses flutter_timezone to get the real device TZ.
-///   - uiLocalNotificationDateInterpretation was missing from zonedSchedule()
+///   - tz.setLocalLocation(tz.UTC) was hardcoded → fixed with FlutterTimezone + .name
+///   - FLN 21.x: all show/zonedSchedule params changed to named
+///   - Added test notification (5-second delay) for user verification
 ///   - Added test notification (5-second delay) for user verification
 ///
 /// Channel layout:
@@ -64,7 +64,7 @@ class NotificationService {
     //         This is the root fix for RUNTIME-001: we were hardcoding UTC.
     try {
       final deviceTZ = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(deviceTZ));
+      tz.setLocalLocation(tz.getLocation(deviceTZ.name));
       debugPrint('[NotificationService] Device timezone: $deviceTZ');
     } catch (e) {
       // Fallback to UTC if plugin fails (e.g., emulator quirk).
@@ -82,6 +82,7 @@ class NotificationService {
     );
 
     final result = await _plugin.initialize(
+        initializationSettings:
       const InitializationSettings(android: androidSettings, iOS: iosSettings),
     );
     _initialised = result ?? false;
@@ -205,11 +206,11 @@ class NotificationService {
 
     try {
       await _plugin.zonedSchedule(
-        id,
-        '🔥 Time to streak!',
-        body,
-        scheduled,
-        NotificationDetails(
+        id: id,
+        title: '🔥 Time to streak!',
+        body: body,
+        scheduledDate: scheduled,
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _reminderId, _reminderName,
             channelDescription: _reminderDesc,
@@ -225,12 +226,8 @@ class NotificationService {
             presentSound: true,
           ),
         ),
-        // FIX: matchDateTimeComponents.time = repeat daily at same hour:minute
         matchDateTimeComponents: DateTimeComponents.time,
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        // FIX: was missing — required by flutter_local_notifications 17.x
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
       );
       return true;
     } catch (e) {
@@ -254,11 +251,11 @@ class NotificationService {
 
     try {
       await _plugin.zonedSchedule(
-        AppConstants.notificationBaseId - 4,
-        '🔔 Test Notification',
-        body,
-        in5s,
-        const NotificationDetails(
+        id: AppConstants.notificationBaseId - 4,
+        title: '🔔 Test Notification',
+        body: body,
+        scheduledDate: in5s,
+        notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             _reminderId, _reminderName,
             importance: Importance.high,
@@ -272,8 +269,6 @@ class NotificationService {
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation:
-            UILocalNotificationDateInterpretation.absoluteTime,
       );
       debugPrint('[NotificationService] Test notification scheduled for $in5s');
     } catch (e) {
@@ -290,10 +285,10 @@ class NotificationService {
     if (!_initialised) await initialise();
     try {
       await _plugin.show(
-        AppConstants.notificationBaseId - 1,
-        '⚠️ Streak at risk!',
-        '$habitName — your $streak-day streak breaks tonight. Log it now.',
-        const NotificationDetails(
+        id: AppConstants.notificationBaseId - 1,
+        title: '⚠️ Streak at risk!',
+        body: '$habitName — your $streak-day streak breaks tonight. Log it now.',
+        notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             _alertId, _alertName,
             importance: Importance.high,
@@ -312,10 +307,10 @@ class NotificationService {
     if (!_initialised) await initialise();
     try {
       await _plugin.show(
-        AppConstants.notificationBaseId - 2,
-        '🎉 Level Up!',
-        'You reached Level $newLevel. Keep building those habits!',
-        const NotificationDetails(
+        id: AppConstants.notificationBaseId - 2,
+        title: '🎉 Level Up!',
+        body: 'You reached Level $newLevel. Keep building those habits!',
+        notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             _celebId, _celebName,
             importance: Importance.defaultImportance,
@@ -343,10 +338,10 @@ class NotificationService {
     };
     try {
       await _plugin.show(
-        AppConstants.notificationBaseId - 3,
-        '🏆 $milestone-day streak!',
-        '$habitName — ${messages[milestone] ?? 'Legendary consistency.'}',
-        const NotificationDetails(
+        id: AppConstants.notificationBaseId - 3,
+        title: '🏆 $milestone-day streak!',
+        body: '$habitName — ${messages[milestone] ?? 'Legendary consistency.'}',
+        notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             _celebId, _celebName,
             importance: Importance.defaultImportance,

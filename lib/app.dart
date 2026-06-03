@@ -8,6 +8,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_typography.dart';
 import 'core/utils/date_utils.dart';
+import 'presentation/providers/database_providers.dart';
 import 'presentation/providers/habit_providers.dart';
 import 'presentation/providers/theme_provider.dart';
 
@@ -97,7 +98,7 @@ class _StreakItAppState extends ConsumerState<StreakItApp>
       final auth = LocalAuthentication();
       final granted = await auth.authenticate(
         localizedReason: 'Unlock Streak It',
-        options: const AuthenticationOptions(biometricOnly: false),
+        options: AuthenticationOptions(biometricOnly: false),
       );
       if (granted && mounted) setState(() => _locked = false);
     } catch (_) {

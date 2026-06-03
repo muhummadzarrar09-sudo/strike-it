@@ -269,6 +269,7 @@ class _HabitCardState extends ConsumerState<HabitCard>
             ),
           ),
         ),
+        ),
       ),
     );
   }
