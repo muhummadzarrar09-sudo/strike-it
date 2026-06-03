@@ -1,0 +1,2 @@
+D:/Streak it Mobile APP/build/.cxx/release/2o4p3z1v/armeabi-v7a/CMakeFiles/edit_cache.dir
+D:/Streak it Mobile APP/build/.cxx/release/2o4p3z1v/armeabi-v7a/CMakeFiles/rebuild_cache.dir
