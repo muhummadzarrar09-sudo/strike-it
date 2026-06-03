@@ -1,6 +1,6 @@
 # SESSION MEMORY — Streak It
 > CAD-RAG context file. Load THIS first, every session. Never scan the full codebase.
-> Updated: 2026-05-31
+> Updated: 2026-06-03
 
 ---
 
@@ -76,7 +76,12 @@ After each sprint: append new mistakes to MISTAKE_LOG.md, update STATUS below.
 | `CardThemeData` not `CardTheme` | Renamed in 3.44 |
 | `DialogThemeData` not `DialogTheme` | Renamed in 3.44 |
 | `Icons.*` not `PhosphorIcons*` | phosphor_flutter extends `IconData` which is now `final` |
-| `flutter_timezone: ^4.1.0` not `^1.0.8` | v1 Android embedding removed |
+| `flutter_timezone: ^5.1.0` not `^4.1.0` | v5 returns `TimezoneInfo`, use `.identifier` |
+| `local_auth: ^3.0.1` — no `const` on `AuthenticationOptions` | 3.x made constructor non-const |
+| `local_auth: ^3.0.1` — no `options:` param on `authenticate()` | 3.x removed `options` parameter entirely |
+| `go_router: ^17.3.0` — no `initialLocationIfNeeded` on `goBranch()` | 17.x removed the param |
+| `flutter_local_notifications: ^21.0.0` — named params only | 21.x removed all positional overloads |
+| `org.jetbrains.kotlin.android` version `2.3.21` in settings.gradle | share_plus-13.x needs Kotlin 2.2+; set explicitly to avoid compiler/stdlib mismatch |
 
 ---
 
@@ -117,22 +122,31 @@ After each sprint: append new mistakes to MISTAKE_LOG.md, update STATUS below.
 - Section label: "Habits" (not "TODAY'S HABITS" all-caps eyebrow)
 - Full `AccentPalette` system: 6 colors, each with primary/light/fill variants
 
+### Dependency Upgrade Pass — 2026-06-03 (Fixes batch)
+- **local_auth 3.0.1** — removed `const` from AuthenticationOptions, removed `options:` param from `authenticate()`
+- **GoRouter 17.3.0** — removed `initialLocationIfNeeded` from `goBranch()`
+- **flutter_timezone 5.1.0** — `getLocalTimezone()` returns `TimezoneInfo` object; use `.identifier`
+- **flutter_local_notifications 21.0.0** — all `show()`, `zonedSchedule()`, `initialize()` params changed from positional to named; removed `uiLocalNotificationDateInterpretation`
+- **syntax fix** — habit_card.dart missing `)` on GestureDetector in nested ScaleTransition
+- **import fix** — app.dart missing `database_providers.dart` import for `notificationServiceProvider`
+- **Kotlin** — re-added `org.jetbrains.kotlin.android` version 2.3.21 to settings.gradle (share_plus-13 needs Kotlin 2.2+). Added `android.suppressKotlinVersionCompatibilityCheck=true` to gradle.properties
+
 ---
 
 ## 🔶 CURRENT STATUS
 
 ### APK
-- **Build:** ✅ PASSING (`flutter build apk --release`)
-- **Size:** ~64.7 MB
+- **Build:** 🟡 IN PROGRESS (Kotlin 2.3.21 KGP added for share_plus compatibility)
+- **Size:** ~64.7 MB (est.)
 - **Location:** `build\app\outputs\flutter-apk\app-release.apk`
 
 ### Known issues to address next
 | Issue | Priority | Sprint |
 |---|---|---|
-| Notifications: user needs to verify they fire correctly (test button exists) | HIGH | E |
-| Onboarding: name entered during onboarding not yet displayed in home greeting | MEDIUM | E |
-| Analytics screen: habit type cast is `dynamic` in one place | LOW | E |
-| Gradle/Kotlin warnings (non-fatal, just warnings) | LOW | F |
+| Verify APK compiles after Kotlin KGP 2.3.21 fix | HIGH | F |
+| Notifications: user needs to verify they fire correctly (test button exists) | HIGH | F |
+| Onboarding: name entered during onboarding not yet displayed in home greeting | MEDIUM | F |
+| Analytics screen: habit type cast is `dynamic` in one place | LOW | F |
 
 ---
 
@@ -144,7 +158,7 @@ Java:         Temurin 17 at C:\Users\M.Zarrar\.jdks\jdk-17
 Android SDK:  C:\Users\M.Zarrar\AppData\Local\Android\Sdk
 Gradle:       8.10.2
 AGP:          8.7.3
-Kotlin:       2.1.0
+Kotlin:       2.3.21   (org.jetbrains.kotlin.android in settings.gradle)
 Min SDK:      21 (Android 5.0)
 Target SDK:   36
 App ID:       com.streakitapp.streak_it
@@ -217,13 +231,13 @@ Type caption: Inter 11px Regular      ← timestamps, hints
 flutter_riverpod: ^2.6.1
 drift: ^2.20.2
 drift_flutter: ^0.2.2
-go_router: ^14.2.7
+go_router: ^17.3.0
 fl_chart: ^0.68.0
 flutter_animate: ^4.5.0
-flutter_local_notifications: ^17.2.4
+flutter_local_notifications: ^21.0.0
 timezone: ^0.9.4
-flutter_timezone: ^4.1.0      ← 1.0.8 caused BUILD-011
-local_auth: ^2.3.0
+flutter_timezone: ^5.1.0      ← 1.0.8 caused BUILD-011
+local_auth: ^3.0.1
 uuid: ^4.4.2
 share_plus: ^10.0.2
 shared_preferences: ^2.3.2
@@ -239,6 +253,6 @@ Before writing any code next session:
 - [ ] Read USER_FEEDBACK.md
 - [ ] Identify WHICH files the next sprint touches
 - [ ] Load ONLY those files
-- [ ] After changes: write .g.dart + zip immediately
+- [ ] After changes: run `dart run build_runner build --delete-conflicting-outputs`
 - [ ] Append new mistakes to MISTAKE_LOG.md
 - [ ] Update STATUS section above

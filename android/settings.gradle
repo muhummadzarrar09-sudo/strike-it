@@ -19,9 +19,10 @@ pluginManagement {
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
     id "com.android.application" version "8.11.1" apply false
-    // AGP 8.11+ has built-in Kotlin — no separate KGP plugin needed.
-    // Removing org.jetbrains.kotlin.android eliminates the KGP warnings
-    // and prepares for AGP 9.0 where KGP is fully removed.
+    // share_plus-13.x and flutter_timezone-5.x apply KGP and compile
+    // against Kotlin 2.2+ stdlib — need KGP version >= 2.2.20.
+    // Update from https://kotlinlang.org/docs/releases.html
+    id "org.jetbrains.kotlin.android" version "2.3.21" apply false
 }
 
 include ":app"

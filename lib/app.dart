@@ -98,7 +98,6 @@ class _StreakItAppState extends ConsumerState<StreakItApp>
       final auth = LocalAuthentication();
       final granted = await auth.authenticate(
         localizedReason: 'Unlock Streak It',
-        options: AuthenticationOptions(biometricOnly: false),
       );
       if (granted && mounted) setState(() => _locked = false);
     } catch (_) {

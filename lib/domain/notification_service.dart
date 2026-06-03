@@ -64,7 +64,7 @@ class NotificationService {
     //         This is the root fix for RUNTIME-001: we were hardcoding UTC.
     try {
       final deviceTZ = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(deviceTZ.name));
+      tz.setLocalLocation(tz.getLocation(deviceTZ.identifier));
       debugPrint('[NotificationService] Device timezone: $deviceTZ');
     } catch (e) {
       // Fallback to UTC if plugin fails (e.g., emulator quirk).
@@ -81,11 +81,10 @@ class NotificationService {
       requestSoundPermission: false,
     );
 
-    final result = await _plugin.initialize(
-        initializationSettings:
-      const InitializationSettings(android: androidSettings, iOS: iosSettings),
+    await _plugin.initialize(
+      settings: const InitializationSettings(android: androidSettings, iOS: iosSettings),
     );
-    _initialised = result ?? false;
+    _initialised = true;
     debugPrint('[NotificationService] Plugin initialised: $_initialised');
 
     // Step 4: Create notification channels (Android 8+).

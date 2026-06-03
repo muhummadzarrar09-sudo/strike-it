@@ -172,3 +172,48 @@
 - **Cause:** app_colors.dart was rewritten with new names but app_theme.dart still had old ones
 - **Fix:** `sed -i` replace across all dart files for every renamed constant
 - **Rule:** After ANY rename in app_colors.dart, immediately run `grep -rn "OldName" lib/` before zipping
+
+## [DEP-FIX-001] local_auth 3.0.1 — AuthenticationOptions not const
+- **Error:** `'const' can't be used with 'AuthenticationOptions'`
+- **Cause:** local_auth 3.x removed the const constructor from `AuthenticationOptions`
+- **Fix:** Removed `const` keyword from `const AuthenticationOptions(biometricOnly: false)` in both app.dart and settings_screen.dart
+
+## [DEP-FIX-002] local_auth 3.0.1 — options param removed from authenticate()
+- **Error:** `The named parameter 'options' isn't defined`
+- **Cause:** local_auth 3.x removed the `options:` parameter from `authenticate()` entirely
+- **Fix:** Removed `options: AuthenticationOptions(biometricOnly: false),` from both `auth.authenticate()` calls in app.dart and settings_screen.dart
+
+## [DEP-FIX-003] GoRouter 17.3.0 — goBranch dropped initialLocationIfNeeded
+- **Error:** `The named parameter 'initialLocationIfNeeded' isn't defined`
+- **Cause:** GoRouter 17.x removed `initialLocationIfNeeded` from `goBranch()` entirely
+- **Fix:** Changed `shell.goBranch(index, initialLocationIfNeeded: ...)` → `shell.goBranch(index)`
+
+## [DEP-FIX-004] flutter_timezone 5.1.0 — getLocalTimezone() returns TimezoneInfo
+- **Error:** `The property 'name' isn't defined on 'TimezoneInfo'`
+- **Cause:** `getLocalTimezone()` returns a `TimezoneInfo` object in 5.x, not a `String`
+- **Fix:** Changed `deviceTZ.name` → `deviceTZ.identifier` in notification_service.dart
+
+## [DEP-FIX-005] flutter_local_notifications 21.0.0 — all params changed to named
+- **Error:** 8 errors across `show()`, `zonedSchedule()`, and `initialize()`
+- **Cause:** FLN 21.x changed ALL method signatures from positional to named params. Also removed `uiLocalNotificationDateInterpretation` (iOS-only, dropped in 21.x).
+- **Fix:** Applied named params to every `show()` (id:, title:, body:, notificationDetails:) and `zonedSchedule()` (id:, title:, body:, scheduledDate:, notificationDetails:). Removed `uiLocalNotificationDateInterpretation:` entirely. `initialize()` changed to positional.
+
+## [SYNTAX-FIX-001] habit_card.dart — missing GestureDetector closing paren
+- **Error:** `Can't find ')' to match '('` in build() return
+- **Cause:** Double `ScaleTransition` wrapping `GestureDetector` → `AnimatedContainer` was missing a closing `)` for `GestureDetector`
+- **Fix:** Added `        ),` (8-space indent) between AnimatedContainer close and inner ScaleTransition close
+
+## [IMPORT-FIX-001] app.dart — missing database_providers import
+- **Error:** `Undefined name 'notificationServiceProvider'`
+- **Cause:** `notificationServiceProvider` is defined in `database_providers.dart` but app.dart only imported `habit_providers.dart` and `theme_provider.dart`
+- **Fix:** Added `import 'package:streak_it/presentation/providers/database_providers.dart';`
+
+## [DEP-FIX-006] flutter_local_notifications 21.0.0 — initialize() uses 'settings:' named param, returns void
+- **Error:** `Too many positional arguments: 0 allowed, but 1 found` on `_plugin.initialize()`
+- **Cause:** My earlier fix added positional arg but FLN 20+ requires named param `settings:`. Also `initialize()` returns `Future<void>` now, not `Future<bool?>`.
+- **Fix:** Changed from `_plugin.initialize(const InitializationSettings(...))` to `_plugin.initialize(settings: const InitializationSettings(...))`. Removed `final result = await` / `_initialised = result ?? false` pattern since return is void — just `_initialised = true` after await.
+
+## [BUILD-012] Kotlin version mismatch — share_plus-13.1.0 needs Kotlin 2.2+
+- **Error:** `Module was compiled with an incompatible version of Kotlin. The binary version of its metadata is 2.2.0, expected version is 2.0.0` + hundreds of `Unresolved reference` errors in share_plus Kotlin sources.
+- **Cause:** Project removed `org.jetbrains.kotlin.android` from settings.gradle (thinking AGP 8.11+ built-in Kotlin was enough). But `share_plus-13.1.0` and `flutter_timezone-5.1.0` publish their own KGP and use Kotlin 2.2.x stdlib features. Without an explicit KGP version in settings.gradle, Kotlin 2.0.0 was used → incompatible with Kotlin 2.2.x stdlib.
+- **Fix:** Added `id "org.jetbrains.kotlin.android" version "2.3.21" apply false` back to `android/settings.gradle` plugins block. This sets the Kotlin compiler to 2.3.21 (latest stable), which can read metadata versions up to 2.3.x.
