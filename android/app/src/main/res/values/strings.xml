@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Streak It</string>
+    <string name="widget_streak_desc">Your current streak at a glance. Don\'t break the chain.</string>
+    <string name="widget_quick_desc">Check off today\'s habits without opening the app.</string>
+    <string name="widget_progress_desc">Daily progress ring showing completion percentage.</string>
 </resources>

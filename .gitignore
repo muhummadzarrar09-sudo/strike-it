@@ -1,0 +1,35 @@
+# Flutter / Dart
+.dart_tool/
+.packages
+build/
+*.iml
+.idea/
+
+# Android
+android/.gradle/
+android/app/google-services.json
+android/local.properties
+android/key.properties
+
+# Generated code
+*.g.dart
+*.freezed.dart
+
+# Environment
+.env
+.env.*
+
+# Isar
+*.isar
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+*.apk
+*.aab
+*.ipa
+
+# Coverage
+coverage/

@@ -1,84 +1,124 @@
-# 🔥 Streak It — Premium Habit Tracker
+# STREAK IT
 
-> Build habits. Break limits.
+> **DON'T BREAK THE CHAIN.** — #FF4D1C on #000000
 
-A production-quality Flutter Android app with real analytics, streak tracking, XP gamification, mood logging, sub-tasks, and full offline-first privacy.
-
----
-
-## 🚀 Build in 2 Steps
-
-### Windows
-```
-1. Right-click setup.bat → Run as Administrator
-2. Wait 5-10 min → APK appears automatically
-```
-
-### macOS / Linux
-```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-The script installs **everything from scratch**: Java 17, Android SDK, Flutter, generates code, and builds the APK. No manual steps required.
+A **privacy-first, offline-first** habit tracker with a **dark brutalist design** that looks like nothing else on the market. Built with Flutter + Firebase.
 
 ---
 
-## ⚠️ Font Files Required
+## 🚀 QUICK START
 
-Before building, download and place these files in `assets/fonts/`:
+```powershell
+# First time:
+.\build.ps1 setup
 
-**Inter** → https://fonts.google.com/specimen/Inter
-- `Inter-Regular.ttf`, `Inter-Medium.ttf`, `Inter-SemiBold.ttf`, `Inter-Bold.ttf`
+# Build & install on your phone:
+.\build.ps1 dev
+.\build.ps1 install
+```
 
-**Space Grotesk** → https://fonts.google.com/specimen/Space+Grotesk
-- `SpaceGrotesk-Regular.ttf`, `SpaceGrotesk-Medium.ttf`, `SpaceGrotesk-SemiBold.ttf`, `SpaceGrotesk-Bold.ttf`
+One command. That's it. The script handles everything.
 
 ---
 
-## 📱 Features
+## 📱 WHAT IT DOES
 
-| Category | Features |
+| Feature | Status |
 |---|---|
-| **Habits** | Binary + quantified, positive + negative, custom schedules, grace days |
-| **Analytics** | Heatmap, bar charts, trend lines, day-of-week analysis, per-habit rates |
-| **Streaks** | Current + best streak, score (0-100), milestone tracking |
-| **Gamification** | XP system, 10 levels, 20 achievements across 4 rarity tiers |
-| **Celebrations** | Particle confetti overlay on milestones and level-ups |
-| **Notifications** | Per-habit daily reminders, streak-at-risk alerts, milestone alerts |
-| **Sub-tasks** | Per-habit checklist, per-day completion tracking |
-| **Mood** | Daily 4-emoji mood log, per-habit |
-| **Data** | CSV export, JSON backup/restore, biometric lock |
-| **Privacy** | 100% offline, no account, no cloud, no tracking |
+| 4-Tab Navigation (Today, Habits, Stats, Journal) | ✅ Done |
+| Binary Habit Tracking (done/not done) | ✅ Done |
+| Habit CRUD (create, edit, delete, reorder) | ✅ Done |
+| Streak Engine (current, longest, heatmap) | ✅ Done |
+| GitHub-Style Heatmap (20-week view) | ✅ Done |
+| Smart Reminders (per-habit, per-day scheduling) | ✅ Done |
+| Analytics (bar charts, KPIs, top habits) | ✅ Done |
+| Deep Journal (mood, energy, reflections, tags) | ✅ Done |
+| Full Gamification (XP, levels, badges, thresholds) | ✅ Done |
+| AI Coach (rule-based pattern analysis) | ✅ Done |
+| Personality Quiz Onboarding (4-step wizard) | ✅ Done |
+| Home Screen Widgets (3 types — native Kotlin) | ✅ Done |
+| Offline-First (Isar local DB, Firebase optional) | ✅ Done |
+| Google Sign-In (Firebase Auth) | ✅ Done |
+| Privacy-First (sync is opt-in, data stays local) | ✅ Done |
 
 ---
 
-## 🏗️ Architecture
+## 🏗 TECH STACK
 
-```
-Flutter + Riverpod 2 + Drift SQLite
-├── lib/core/          → theme, constants, utils, router
-├── lib/data/          → Drift DB, DAOs, repositories
-├── lib/domain/        → streak engine, XP, achievements, notifications, export
-└── lib/presentation/  → screens, widgets, providers
-```
-
-See `docs/ARCHITECTURE.md` for full details.
-
----
-
-## 🧪 Tests
-
-```bash
-flutter test
-```
-
-96 tests across unit, widget, and smoke levels.
+| Layer | Tech | Version |
+|---|---|---|
+| Framework | Flutter | 3.35+ |
+| State | Riverpod | 3.3 |
+| Local DB | Isar Community | 3.3 |
+| Auth | Firebase Auth + Google Sign-In | 6.0 |
+| Notifications | flutter_local_notifications | 19.5 |
+| Charts | fl_chart | 1.2 |
+| Animations | flutter_animate | 4.5 |
+| Widgets | home_widget + workmanager | 0.7 / 0.5 |
+| ML | flutter_litert (TFLite-ready) | 0.2 |
+| Android | AGP 8.9, Kotlin 2.1, Gradle 8.11, minSdk 24 |
 
 ---
 
-## 📖 Docs
+## 📁 PROJECT STRUCTURE
 
-- `docs/ARCHITECTURE.md` — System design
-- `docs/SPRINT_PLAN.md` — What was built in each sprint
-- `docs/APK_BUILD_GUIDE.md` — Manual build guide (if auto-script fails)
+```
+streak_it/
+├── build.ps1                     ← THE SCRIPT. Run this.
+├── lib/
+│   ├── main.dart                 ← Entry (onboarding → app shell)
+│   ├── core/
+│   │   ├── theme/app_theme.dart  ← Dark brutalist design system
+│   │   ├── constants/            ← XP values, IDs, thresholds
+│   │   └── services/             ← Isar, Firebase, Notifications, Sync
+│   ├── features/
+│   │   ├── habits/               ← Binary CRUD, check-in, today screen
+│   │   ├── streaks/              ← Streak engine, heatmap, header
+│   │   ├── analytics/            ← Bar charts, KPIs
+│   │   ├── journal/              ← Mood, energy, reflections
+│   │   ├── gamification/         ← XP engine, badges, leveling
+│   │   ├── ai_coach/             ← Pattern analysis, suggestions
+│   │   ├── widgets/              ← Home screen widget bridge
+│   │   ├── auth/                 ← Google Sign-In screen
+│   │   └── onboarding/           ← 4-step personality quiz
+│   └── common/widgets/           ← Shared UI components
+├── android/                      ← Native Kotlin (widgets, manifest)
+├── docs/                         ← Architecture, design, setup, deps
+└── brand/                        ← Logo (#FF4D1C on black)
+```
+
+---
+
+## 🎨 DESIGN SYSTEM
+
+- **One color**: #FF4D1C — only on streaks, CTAs, active states
+- **No shadows. No gradients. No rounded corners.**
+- **Bold typography** (Space Grotesk via Google Fonts)
+- **Raw borders > shadows** for hierarchy
+- **Negative space is intentional**
+
+---
+
+## 📦 DEPENDENCIES (58 pinned)
+
+See `docs/setup/DEPENDENCIES.md` for the full compatibility matrix.
+
+---
+
+## 🔧 BUILD SCRIPT COMMANDS
+
+```powershell
+.\build.ps1 setup    # First-time: fonts, assets, env check
+.\build.ps1 dev      # Full pipeline → APK + AAB
+.\build.ps1 prod     # Same, but prod Firebase
+.\build.ps1 quick    # Fast: skip tests
+.\build.ps1 run      # Build + install on phone
+.\build.ps1 install  # Install last APK
+.\build.ps1 clean    # Nuclear clean
+.\build.ps1 doctor   # Env check
+.\build.ps1 help     # Show help
+```
+
+---
+
+Built with ☠️ and #FF4D1C
