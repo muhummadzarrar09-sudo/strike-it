@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import '../../core/services/isar_service.dart';
+import '../../../core/services/isar_service.dart';
 import '../models/habit.dart';
 import '../models/habit_checkin.dart';
 

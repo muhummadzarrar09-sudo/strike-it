@@ -1,5 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="app.streakit.android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -16,6 +15,8 @@
         android:allowBackup="false"
         android:supportsRtl="true">
 
+        <meta-data android:name="flutterEmbedding" android:value="2"/>
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -31,17 +32,17 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name="app.streakit.android.StreakItWidgetProvider" android:exported="true" android:label="Streak Counter">
+        <receiver android:name=".StreakItWidgetProvider" android:exported="true" android:label="Streak Counter">
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/streak_widget_info"/>
         </receiver>
 
-        <receiver android:name="app.streakit.android.QuickCheckWidgetProvider" android:exported="true" android:label="Quick Check">
+        <receiver android:name=".QuickCheckWidgetProvider" android:exported="true" android:label="Quick Check">
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/quick_check_widget_info"/>
         </receiver>
 
-        <receiver android:name="app.streakit.android.ProgressRingWidgetProvider" android:exported="true" android:label="Daily Progress">
+        <receiver android:name=".ProgressRingWidgetProvider" android:exported="true" android:label="Daily Progress">
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE"/></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/progress_widget_info"/>
         </receiver>

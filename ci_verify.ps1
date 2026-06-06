@@ -1,13 +1,13 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-#   STREAK IT — CI QA VERIFICATION SCRIPT
-#   Run this to verify every import chain, test, and path before building.
-# ═══════════════════════════════════════════════════════════════════════════════
+# ==============================================================================
+#   STREAK IT - CI QA VERIFICATION SCRIPT (Phase 12)
+#   Run before every build to verify code integrity.
+# ==============================================================================
 #
 #   USAGE:
-#     .\ci_verify.ps1           — Full QA: lint → test → path audit
-#     .\ci_verify.ps1 -Quick    — Fast: path audit only
-#     .\ci_verify.ps1 -Tests    — Run all tests only
-# ═══════════════════════════════════════════════════════════════════════════════
+#     .\ci_verify.ps1           - Full QA: lint -> test -> path audit
+#     .\ci_verify.ps1 -Quick    - Fast: path audit only
+#     .\ci_verify.ps1 -Tests    - Run all tests only
+# ==============================================================================
 
 param(
     [switch]$Quick,
@@ -15,22 +15,47 @@ param(
 )
 
 $ErrorActionPreference = "Continue"
-$Root = Split-Path -Parent $MyInvocation.MyCommand.Path
+$Root = if ($MyInvocation.MyCommand.Path) { Split-Path -Parent $MyInvocation.MyCommand.Path } else { Get-Location }
 
-function Write-H { param($T) Write-Host "`n━━━ $T ━━━" -ForegroundColor Cyan }
-function Write-S { param($T) Write-Host "  → $T" -ForegroundColor Gray }
-function Write-OK { param($T) Write-Host "  ✅ $T" -ForegroundColor Green }
-function Write-W { param($T) Write-Host "  ⚠️  $T" -ForegroundColor Yellow }
-function Write-E { param($T) Write-Host "  ❌ $T" -ForegroundColor Red }
+function Write-H { param($T) Write-Host "`n--- $T ---" -ForegroundColor Cyan }
+function Write-S { param($T) Write-Host "  > $T" -ForegroundColor Gray }
+function Write-OK { param($T) Write-Host "  [OK] $T" -ForegroundColor Green }
+function Write-W { param($T) Write-Host "  [WARN] $T" -ForegroundColor Yellow }
+function Write-E { param($T) Write-Host "  [ERROR] $T" -ForegroundColor Red }
 
 $failures = 0
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 1. PATH AUDIT — Every import must resolve
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ------------------------------------------------------------------------------
+# 0. ENV SETUP
+# ------------------------------------------------------------------------------
+function Init-Env {
+    $sysPaths = @("C:\Windows\System32","C:\Windows","C:\Windows\System32\Wbem","C:\Windows\System32\WindowsPowerShell\v1.0")
+    foreach ($p in $sysPaths) { if ($env:PATH -notlike "*$p*") { $env:PATH = "$p;$env:PATH" } }
+
+    $javaCandidates = @("$env:USERPROFILE\.jdks\jdk-17","$env:JAVA_HOME","${env:ProgramFiles}\Eclipse Adoptium\jdk-17.0.14.7-hotspot","${env:ProgramFiles}\Java\jdk-17")
+    foreach ($c in $javaCandidates) {
+        if ($c -and (Test-Path "$c\bin\java.exe")) { $env:JAVA_HOME = $c; $env:PATH = "$c\bin;$env:PATH"; break }
+    }
+    if (-not $env:JAVA_HOME -and (Get-Command java -ErrorAction SilentlyContinue)) {
+        $env:JAVA_HOME = (Get-Command java).Source -replace "\\bin\\java\.exe$",""
+    }
+
+    $flutterCandidates = @("$env:USERPROFILE\flutter","C:\flutter","C:\src\flutter")
+    foreach ($c in $flutterCandidates) {
+        if ($c -and (Test-Path "$c\bin\flutter.bat")) { $env:PATH = "$c\bin;$env:PATH"; break }
+    }
+
+    $androidCandidates = @("$env:ANDROID_HOME","$env:LOCALAPPDATA\Android\Sdk","$env:HOMEDRIVE\Android\Sdk")
+    foreach ($c in $androidCandidates) {
+        if ($c -and (Test-Path "$c\platform-tools\adb.exe")) { $env:ANDROID_HOME = $c; $env:PATH = "$c\platform-tools;$env:PATH"; break }
+    }
+}
+
+# ------------------------------------------------------------------------------
+# 1. PATH AUDIT
+# ------------------------------------------------------------------------------
 function Audit-Paths {
     Write-H "PATH AUDIT"
-
     $mustExist = @(
         "lib/main.dart",
         "lib/core/theme/app_theme.dart",
@@ -92,6 +117,7 @@ function Audit-Paths {
         "android/app/src/main/res/drawable/widget_preview_progress.xml",
         "android/app/proguard-rules.pro",
         "build.ps1",
+        "build.yaml",
         "pubspec.yaml",
         "analysis_options.yaml",
         ".gitignore",
@@ -113,132 +139,115 @@ function Audit-Paths {
             Write-OK $path
         } else {
             Write-E "MISSING: $path"
-            $failures++
+            $script:failures++
         }
     }
 
     $total = $mustExist.Count
-    Write-Host "`n  Path audit: $($total - $failures)/$total passed" -ForegroundColor $(if ($failures -eq 0) { "Green" } else { "Red" })
+    $passed = $total - $script:failures
+    Write-Host "`n  Path audit: $passed/$total passed" -ForegroundColor $(if ($script:failures -eq 0) { "Green" } else { "Red" })
 }
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 2. IMPORT CHAIN VERIFICATION
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ------------------------------------------------------------------------------
+# 2. IMPORT CHAIN
+# ------------------------------------------------------------------------------
 function Audit-Imports {
     Write-H "IMPORT CHAIN VERIFICATION"
-
-    $dartFiles = Get-ChildItem -Path "$Root/lib" -Filter "*.dart" -Recurse | Where-Object { $_.Name -notlike "*.g.dart" }
+    $dartFiles = Get-ChildItem -Path "$Root\lib" -Filter "*.dart" -Recurse | Where-Object { $_.Name -notlike "*.g.dart" }
 
     foreach ($file in $dartFiles) {
         $content = Get-Content $file.FullName -Raw
         $imports = [regex]::Matches($content, "import '([^']+)'")
-
         foreach ($match in $imports) {
             $importPath = $match.Groups[1].Value
-
-            # Skip package: imports (handled by pub get)
-            if ($importPath.StartsWith("package:") -or $importPath.StartsWith("dart:")) {
-                continue
-            }
-
-            # Resolve relative import
+            if ($importPath.StartsWith("package:") -or $importPath.StartsWith("dart:")) { continue }
             $fileDir = Split-Path $file.FullName -Parent
             $resolved = Join-Path $fileDir $importPath -Resolve
-
             if (-not (Test-Path $resolved)) {
-                Write-E "BROKEN IMPORT: $importPath`n   in: $($file.FullName)"
-                $failures++
+                Write-E "BROKEN: $importPath`n   in: $($file.FullName)"
+                $script:failures++
             }
         }
     }
-
-    if ($failures -eq 0) { Write-OK "All imports resolve" }
+    if ($script:failures -eq 0) { Write-OK "All imports resolve" }
 }
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# 3. PART DIRECTIVE AUDIT
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ------------------------------------------------------------------------------
+# 3. PART AUDIT
+# ------------------------------------------------------------------------------
 function Audit-Parts {
     Write-H "PART DIRECTIVE AUDIT"
-
-    $modelFiles = Get-ChildItem -Path "$Root/lib/features" -Recurse -Filter "*.dart" |
-        Where-Object { $_.Name -like "*.dart" -and $_.Name -notlike "*.g.dart" }
-
+    $modelFiles = Get-ChildItem -Path "$Root\lib\features" -Recurse -Filter "*.dart" | Where-Object { $_.Name -notlike "*.g.dart" }
     foreach ($file in $modelFiles) {
         $content = Get-Content $file.FullName -Raw
         $parts = [regex]::Matches($content, "part '([^']+.g.dart)'")
-
         foreach ($match in $parts) {
             $partName = $match.Groups[1].Value
             $partFile = Join-Path (Split-Path $file.FullName -Parent) $partName
-
             if (-not (Test-Path $partFile)) {
                 Write-E "MISSING PART: $partName`n   in: $($file.FullName)"
-                $failures++
+                $script:failures++
             }
         }
     }
-
-    if ($failures -eq 0) { Write-OK "All part files exist" }
+    if ($script:failures -eq 0) { Write-OK "All part files exist" }
 }
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ------------------------------------------------------------------------------
 # 4. RUN TESTS
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ------------------------------------------------------------------------------
 function Invoke-AllTests {
     Write-H "RUNNING ALL TESTS"
     Set-Location $Root
 
     Write-S "Unit tests..."
-    $result = flutter test test/unit/ 2>&1
+    & flutter test test/unit/ 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-OK "All unit tests passed"
     } else {
-        Write-W "Unit test failures — review output above"
-        $failures++
+        Write-W "Unit test failures - review output"
+        $script:failures++
     }
 
     Write-S "Widget tests..."
-    $result = flutter test test/widget/ 2>&1
+    & flutter test test/widget/ 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-OK "All widget tests passed"
     } else {
-        Write-W "Widget test failures — review output above"
-        $failures++
+        Write-W "Widget test failures - review output"
+        $script:failures++
     }
 }
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ==============================================================================
 # MAIN
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# ==============================================================================
 
 Write-Host ""
-Write-Host "  STREAK IT — CI QA VERIFICATION" -ForegroundColor White
+Write-Host "  STREAK IT - CI QA VERIFICATION" -ForegroundColor White
 Write-Host "  $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')" -ForegroundColor DarkGray
 Write-Host ""
 
+Init-Env
 $sw = [System.Diagnostics.Stopwatch]::StartNew()
 
-# Always audit paths
 Audit-Paths
 Audit-Parts
 Audit-Imports
 
-# Run tests unless -Quick
 if (-not $Quick) {
     Invoke-AllTests
 }
 
 $sw.Stop()
-
 Write-Host ""
 if ($failures -eq 0) {
-    Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Green
-    Write-Host "  ALL CHECKS PASSED — $($sw.Elapsed.ToString('mm\:ss'))" -ForegroundColor White
-    Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Green
+    Write-Host "=======================================================" -ForegroundColor Green
+    Write-Host "  ALL CHECKS PASSED - $($sw.Elapsed.ToString('mm\:ss'))" -ForegroundColor White
+    Write-Host "=======================================================" -ForegroundColor Green
 } else {
-    Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Red
-    Write-Host "  $failures FAILURES — $($sw.Elapsed.ToString('mm\:ss'))" -ForegroundColor Red
-    Write-Host "═══════════════════════════════════════════════════════" -ForegroundColor Red
+    Write-Host "=======================================================" -ForegroundColor Red
+    Write-Host "  $failures FAILURES - $($sw.Elapsed.ToString('mm\:ss'))" -ForegroundColor Red
+    Write-Host "=======================================================" -ForegroundColor Red
 }
 Write-Host ""

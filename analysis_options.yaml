@@ -9,7 +9,6 @@ linter:
     - always_declare_return_types
     - avoid_print
     - avoid_redundant_argument_values
-    - avoid_relative_lib_imports
     - avoid_unnecessary_containers
     - camel_case_types
     - constant_identifier_names
@@ -34,6 +33,7 @@ linter:
 analyzer:
   errors:
     invalid_annotation_target: ignore
+    avoid_relative_lib_imports: ignore
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"

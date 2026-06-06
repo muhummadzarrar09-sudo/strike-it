@@ -58,4 +58,46 @@ class StreakEngine {
     final lastDate = DateTime(lastCompletedDate.year, lastCompletedDate.month, lastCompletedDate.day);
     return lastDate != todayDate;
   }
+
+  /// Returns the weekday (0=Mon..6=Sun) with the most completions.
+  /// Returns -1 if no data.
+  static int getBestDayOfWeek(List<DateTime> dates) {
+    if (dates.isEmpty) return -1;
+    final counts = List.filled(7, 0);
+    for (final d in dates) {
+      // DateTime.weekday: 1=Mon..7=Sun → convert to 0=Mon..6=Sun
+      counts[(d.weekday - 1) % 7]++;
+    }
+    int bestIdx = 0;
+    int bestCount = counts[0];
+    for (int i = 1; i < 7; i++) {
+      if (counts[i] > bestCount) {
+        bestCount = counts[i];
+        bestIdx = i;
+      }
+    }
+    return bestIdx;
+  }
+
+  /// Returns the weekday (0=Mon..6=Sun) with the fewest completions.
+  /// Only considers days that have at least one completion.
+  /// Returns -1 if no data.
+  static int getWorstDayOfWeek(List<DateTime> dates) {
+    if (dates.isEmpty) return -1;
+    final counts = List.filled(7, 0);
+    for (final d in dates) {
+      counts[(d.weekday - 1) % 7]++;
+    }
+    int worstIdx = -1;
+    int worstCount = 999999999;
+    for (int i = 0; i < 7; i++) {
+      if (counts[i] > 0 && counts[i] < worstCount) {
+        worstCount = counts[i];
+        worstIdx = i;
+      }
+    }
+    // If all days have the same count, return the best day
+    if (worstIdx == -1) return getBestDayOfWeek(dates);
+    return worstIdx;
+  }
 }

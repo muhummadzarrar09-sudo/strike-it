@@ -15,7 +15,9 @@ class AppConstants {
 
   static const String notificationChannelId = 'streak_it_reminders';
   static const String notificationChannelName = 'Habit Reminders';
+  static const String notificationChannelDesc = 'Daily habit reminders and streak warnings';
   static const String widgetBackgroundTask = 'widgetBackgroundUpdate';
+  static const String androidWidgetProvider = 'StreakItWidgetProvider';
 
   static const int maxFreeHabits = 5;
   static const Duration syncTimeout = Duration(seconds: 30);

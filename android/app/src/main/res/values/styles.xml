@@ -1,11 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  STREAK IT — ANDROID STYLES
-  LaunchTheme parent MUST be Theme.AppCompat for:
-  1. local_auth biometric dialog (prevents crashes on Android 8-)
-  2. Dark mode support in biometric prompt
-  3. Proper system bar theming
--->
 <resources>
     <style name="LaunchTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>

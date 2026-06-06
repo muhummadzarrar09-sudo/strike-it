@@ -98,7 +98,7 @@ class NotificationService {
   /// Opens Android app settings so user can enable notifications manually
   Future<bool> openNotificationSettings() async {
     // permission_handler exports openAppSettings() as a top-level function
-    return await permission_handler.openAppSettings();
+    return await openAppSettings();
   }
 
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

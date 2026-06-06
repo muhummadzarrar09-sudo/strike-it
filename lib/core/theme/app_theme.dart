@@ -77,6 +77,5 @@ class StreakItTheme {
         dialogTheme: DialogThemeData(backgroundColor: nearBlack, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0), side: const BorderSide(color: darkGray, width: 1))),
         bottomSheetTheme: const BottomSheetThemeData(backgroundColor: nearBlack, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(0)), side: BorderSide(color: darkGray, width: 1))),
         snackBarTheme: SnackBarThemeData(backgroundColor: deepCharcoal, contentTextStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: offWhite), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0), side: const BorderSide(color: darkGray, width: 1)), behavior: SnackBarBehavior.floating),
-        scaffoldBackgroundColor: black,
       );
 }
